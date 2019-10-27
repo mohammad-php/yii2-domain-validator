@@ -2,7 +2,6 @@
 
 namespace kdn\yii2\validators;
 
-use PHPUnit_Framework_TestCase;
 use Yii;
 use yii\helpers\ArrayHelper;
 
@@ -10,7 +9,7 @@ use yii\helpers\ArrayHelper;
  * Class TestCase.
  * @package kdn\yii2\validators
  */
-abstract class TestCase extends PHPUnit_Framework_TestCase
+abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
     /**
      * Mock Yii application.
