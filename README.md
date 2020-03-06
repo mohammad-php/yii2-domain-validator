@@ -25,7 +25,7 @@ The preferred way to install this extension is through [Composer](https://getcom
 To install, either run
 
 ```
-$ php composer.phar require kdn/yii2-domain-validator "*"
+php composer.phar require kdn/yii2-domain-validator "*"
 ```
 
 or add
@@ -94,6 +94,7 @@ If you don't need URLs at all, only stand-alone domain name, you can disable thi
 by setting `allowURL` to `false`.
 If you always need to validate domain name in URL, no stand-alone domain name,
 then you should add URL validator before domain name validator:
+
     ```php
     public function rules()
     {
@@ -103,6 +104,7 @@ then you should add URL validator before domain name validator:
         ];
     }
     ```
+
 1. By default minimum number of domain name labels is 2. So `example` - invalid, `example.com` - valid.
 It is not standard requirement for domain name, standard states that domain name `example` is valid.
 I added this restriction for practical reasons, you can disable it or require even more domain name labels
@@ -110,3 +112,80 @@ using option `labelNumberMin`.
 1. Client side validation not implemented and I have not such plans.
 Please consider [AJAX validation](https://www.yiiframework.com/doc/guide/2.0/en/input-validation#ajax-validation)
 if you want to bring domain validation on client side.
+
+# Testing
+
+Make sure you installed all composer dependencies (run `composer update` in the base directory of repository).
+Run PHPUnit in the base directory of repository:
+
+```sh
+./vendor/bin/phpunit
+```
+
+## Testing using Docker
+
+#### Requirements
+
+- Docker 18.09.0 or later ([install](https://docs.docker.com/install));
+- Docker Compose 1.22.0 or later ([install](https://docs.docker.com/compose/install));
+- Docker plugins:
+  - `buildx` ([install](https://github.com/docker/buildx#installing)).
+
+#### Up and running
+
+Provide credentials to composer:
+
+```sh
+cp tests/composer/auth.json.example tests/composer/auth.json
+```
+
+I suggest to set GitHub OAuth token (also known as personal access token) in `tests/composer/auth.json`,
+however if you have doubts about security or you are lazy to generate token then you can replace content of
+`auth.json` on `{}`, in most cases this will work.
+
+Build image for service:
+
+```sh
+docker buildx bake --pull 7.4
+```
+
+This command will build image using PHP 7.4. Also allowed `7.4-alpine`, `5.6`, `5.6-alpine` and others, see services
+defined in `docker-compose.yml`.
+
+Start service in background mode:
+
+```sh
+docker-compose up --detach 7.4
+```
+
+Execute tests in the running container:
+
+```sh
+docker-compose exec 7.4 ./vendor/bin/phpunit
+```
+
+Alternatively you can start shell in the running container and execute tests from it:
+
+```sh
+docker-compose exec 7.4 sh
+$ ./vendor/bin/phpunit
+```
+
+Update composer dependencies in the running container:
+
+```sh
+docker-compose exec 7.4 sh
+$ ./tests/composer/update-dependencies.sh
+```
+
+Stop and remove containers created by `up`:
+
+```sh
+docker-compose down
+```
+
+You may want to remove volumes along with containers:
+
+```sh
+docker-compose down --volume
+```
